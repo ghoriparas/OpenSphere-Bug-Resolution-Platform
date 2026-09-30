@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Issues & Bugs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Issues, Bugs & Work Items</h1>
+        <p class="page-subtitle">Track, filter, and resolve tickets across open-source repositories.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-download"></i> Export CSV
+        </a>
+        <a href="{{ url_for('create_issue') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Report New Issue
+        </a>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+    <form method="GET" action="{{ url_for('issues') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 2; min-width: 200px;">
+            <label class="form-label" style="margin-bottom: 0.35rem;">Search Title</label>
+            <input type="text" name="search" class="form-control" placeholder="Search by keywords..." value="{{ request.args.get('search', '') }}">
+        </div>
+
+        <div style="flex: 1; min-width: 140px;">
+            <label class="form-label" style="margin-bottom: 0.35rem;">Status</label>
+            <select name="status" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="Open" {% if request.args.get('status') == 'Open' %}selected{% endif %}>Open</option>
+                <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Resolved" {% if request.args.get('status') == 'Resolved' %}selected{% endif %}>Resolved</option>
+                <option value="Closed" {% if request.args.get('status') == 'Closed' %}selected{% endif %}>Closed</option>
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 140px;">
+            <label class="form-label" style="margin-bottom: 0.35rem;">Priority</label>
+            <select name="priority" class="form-control">
+                <option value="">All Priorities</option>
+                <option value="Low" {% if request.args.get('priority') == 'Low' %}selected{% endif %}>Low</option>
+                <option value="Medium" {% if request.args.get('priority') == 'Medium' %}selected{% endif %}>Medium</option>
+                <option value="High" {% if request.args.get('priority') == 'High' %}selected{% endif %}>High</option>
+                <option value="Critical" {% if request.args.get('priority') == 'Critical' %}selected{% endif %}>Critical</option>
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 160px;">
+            <label class="form-label" style="margin-bottom: 0.35rem;">Project</label>
+            <select name="project_id" class="form-control">
+                <option value="">All Projects</option>
+                {% for proj in projects %}
+                <option value="{{ proj.id }}" {% if request.args.get('project_id') == proj.id|string %}selected{% endif %}>
+                    {{ proj.title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1rem;">
+                <i class="fa-solid fa-filter"></i> Apply
+            </button>
+            <a href="{{ url_for('issues') }}" class="btn btn-secondary" style="padding: 0.75rem 1rem;">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Issues Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">ID</th>
+                    <th>Title</th>
+                    <th>Project</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assignee</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in issues %}
+                <tr>
+                    <td><strong>#{{ issue.id }}</strong></td>
+                    <td>
+                        <a href="{{ url_for('issue_detail', issue_id=issue.id) }}" style="font-weight: 600; font-size: 1rem;">
+                            {{ issue.title }}
+                        </a>
+                    </td>
+                    <td>{{ issue.project.title }}</td>
+                    <td><span style="color: var(--text-muted); font-size: 0.85rem;">{{ issue.issue_type }}</span></td>
+                    <td>
+                        <span class="badge badge-{{ issue.priority|lower }}">{{ issue.priority }}</span>
+                    </td>
+                    <td>
+                        {% if issue.status == 'Open' %}
+                            <span class="badge badge-open">Open</span>
+                        {% elif issue.status == 'In Progress' %}
+                            <span class="badge badge-progress">In Progress</span>
+                        {% elif issue.status == 'Resolved' %}
+                            <span class="badge badge-resolved">Resolved</span>
+                        {% else %}
+                            <span class="badge badge-closed">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">
+                            {{ issue.assignee.username if issue.assignee else 'Unassigned' }}
+                        </span>
+                    </td>
+                    <td style="color: var(--text-dim); font-size: 0.85rem;">{{ issue.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        <a href="{{ url_for('issue_detail', issue_id=issue.id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: var(--text-dim);"></i>
+                        No issues found matching the criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

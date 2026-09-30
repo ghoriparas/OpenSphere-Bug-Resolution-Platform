@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Project{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 1.5rem auto;">
+    <div class="card" style="padding: 2rem;">
+        <div class="page-header" style="margin-bottom: 1.5rem;">
+            <div>
+                <h2 class="page-title" style="font-size: 1.4rem;">{{ action }} Project</h2>
+                <p class="page-subtitle">Configure project metadata and open source repository details.</p>
+            </div>
+            <a href="{{ url_for('projects') }}" class="btn btn-secondary" style="font-size: 0.85rem;">Back</a>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Project Title *</label>
+                <input type="text" name="title" class="form-control" value="{{ project.title if project else '' }}" placeholder="e.g. OpenSphere Engine" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="4" class="form-control" placeholder="Describe the goal and scope of this project...">{{ project.description if project else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Technology Stack</label>
+                <input type="text" name="technology_stack" class="form-control" value="{{ project.technology_stack if project else 'Python, Flask, SQLite, Vanilla CSS, JS' }}" placeholder="e.g. Python, Flask, React, Docker">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Repository URL (GitHub / GitLab)</label>
+                <input type="url" name="repository_url" class="form-control" value="{{ project.repository_url if project else '' }}" placeholder="https://github.com/org/repo">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Lifecycle Status</label>
+                <select name="status" class="form-control">
+                    <option value="Active" {% if project and project.status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Completed" {% if project and project.status == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="On Hold" {% if project and project.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                <a href="{{ url_for('projects') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i> Save Project
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

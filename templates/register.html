@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 2.5rem auto;">
+    <div class="card" style="padding: 2.5rem 2rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="width: 60px; height: 60px; background: rgba(139, 92, 246, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--accent); font-size: 1.8rem;">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="page-title" style="font-size: 1.5rem;">Create Account</h2>
+            <p class="page-subtitle">Join OpenSphere Open Source Workspace</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-user"></i> Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Choose a username" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="user@domain.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-shield-halved"></i> Role</label>
+                <select name="role" class="form-control">
+                    <option value="Developer">Developer (Standard User)</option>
+                    <option value="Admin">Admin (Project Manager)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-key"></i> Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Create a strong password" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                <i class="fa-solid fa-check"></i> Complete Registration
+            </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

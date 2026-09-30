@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Open Source Projects</h1>
+        <p class="page-subtitle">Track repositories, technology stacks, and linked issues.</p>
+    </div>
+    <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> New Project
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+    {% for p in projects %}
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 700;">{{ p.title }}</h3>
+                <span class="badge badge-resolved">{{ p.status }}</span>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.25rem;">
+                {{ p.description or 'No description provided.' }}
+            </p>
+
+            <div style="margin-bottom: 1rem; font-size: 0.85rem;">
+                <strong style="color: var(--text-dim); display: block; margin-bottom: 0.25rem;">Tech Stack:</strong>
+                <span style="color: var(--primary); background: rgba(99, 102, 241, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                    <i class="fa-solid fa-code"></i> {{ p.technology_stack }}
+                </span>
+            </div>
+
+            {% if p.repository_url %}
+            <div style="margin-bottom: 1.25rem;">
+                <a href="{{ p.repository_url }}" target="_blank" style="font-size: 0.85rem; color: var(--text-muted);">
+                    <i class="fa-brands fa-github"></i> Repository Link
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-dim);">
+                <i class="fa-solid fa-bug"></i> {{ p.issues|length }} Issues
+            </span>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('project_detail', project_id=p.id) }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    View
+                </a>
+                <a href="{{ url_for('edit_project', project_id=p.id) }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+        <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--text-dim); margin-bottom: 1rem;"></i>
+        <h3>No projects found</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Get started by creating your first open source project module.</p>
+        <a href="{{ url_for('create_project') }}" class="btn btn-primary">Create Project</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Issue #{{ issue.id }}: {{ issue.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <h1 class="page-title">#{{ issue.id }} - {{ issue.title }}</h1>
+            <span class="badge badge-{{ issue.priority|lower }}">{{ issue.priority }} Priority</span>
+            <span class="badge badge-resolved">{{ issue.status }}</span>
+        </div>
+        <p class="page-subtitle">
+            Reported by <strong>{{ issue.reporter.username }}</strong> on {{ issue.created_at.strftime('%b %d, %Y at %H:%M') }} 
+            under project <a href="{{ url_for('project_detail', project_id=issue.project.id) }}">{{ issue.project.title }}</a>
+        </p>
+    </div>
+    <a href="{{ url_for('issues') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-arrow-left"></i> Back to Issues
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Main Left: Description & Comments -->
+    <div>
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-align-left" style="color: var(--primary);"></i> Issue Description
+            </h3>
+            <div style="color: var(--text-main); line-height: 1.7; white-space: pre-line;">
+                {{ issue.description }}
+            </div>
+        </div>
+
+        <!-- Activity & Comments Section -->
+        <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-comments" style="color: var(--accent);"></i> Developer Discussion & Resolution Notes ({{ issue.comments|length }})
+            </h3>
+
+            <div style="margin-bottom: 1.5rem;">
+                {% for comment in issue.comments %}
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <strong style="color: var(--primary); font-size: 0.95rem;">
+                            <i class="fa-solid fa-user-circle"></i> {{ comment.user.username }} ({{ comment.user.role }})
+                        </strong>
+                        <span style="color: var(--text-dim); font-size: 0.8rem;">{{ comment.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                    </div>
+                    <p style="color: var(--text-main); line-height: 1.5; font-size: 0.95rem;">{{ comment.content }}</p>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; margin-bottom: 1rem;">No comments posted yet. Start the discussion below.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Add Comment Form -->
+            <form method="POST" action="{{ url_for('add_comment', issue_id=issue.id) }}">
+                <div class="form-group">
+                    <label class="form-label">Add Note / Fix Description</label>
+                    <textarea name="content" rows="3" class="form-control" placeholder="Write comment, pull request link, or resolution steps..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-comment-dots"></i> Post Note
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Sidebar: Quick Status & Assignee Controls -->
+    <div>
+        <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-sliders" style="color: var(--warning);"></i> Manage Ticket
+            </h3>
+
+            <form method="POST" action="{{ url_for('update_issue_status', issue_id=issue.id) }}">
+                <div class="form-group">
+                    <label class="form-label">Workflow Status</label>
+                    <select name="status" class="form-control">
+                        <option value="Open" {% if issue.status == 'Open' %}selected{% endif %}>Open</option>
+                        <option value="In Progress" {% if issue.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Resolved" {% if issue.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="Closed" {% if issue.status == 'Closed' %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Assignee</label>
+                    <select name="assigned_to_id" class="form-control">
+                        <option value="none">-- Unassigned --</option>
+                        {% for u in users %}
+                        <option value="{{ u.id }}" {% if issue.assigned_to_id == u.id %}selected{% endif %}>
+                            {{ u.username }} ({{ u.role }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+                    <i class="fa-solid fa-rotate"></i> Update Ticket
+                </button>
+            </form>
+
+            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">
+                <div style="margin-bottom: 0.5rem;"><strong>Issue Type:</strong> {{ issue.issue_type }}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Priority:</strong> {{ issue.priority }}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Last Updated:</strong> {{ issue.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

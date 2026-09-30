@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OpenSphere{% endblock %} - OSTF Open Source Portal</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="{{ url_for('dashboard') }}" class="nav-brand">
+            <i class="fa-solid fa-cubes-stacked"></i>
+            <span>OpenSphere</span>
+        </a>
+        
+        {% if session.get('user_id') %}
+        <ul class="nav-links">
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="{{ url_for('projects') }}" class="nav-link"><i class="fa-solid fa-diagram-project"></i> Projects</a></li>
+            <li><a href="{{ url_for('issues') }}" class="nav-link"><i class="fa-solid fa-bug"></i> Issues & Bugs</a></li>
+            <li><a href="{{ url_for('kanban') }}" class="nav-link"><i class="fa-solid fa-table-columns"></i> Kanban Board</a></li>
+        </ul>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <span class="user-badge">
+                <i class="fa-solid fa-user-gear"></i> {{ session.get('username') }} ({{ session.get('role') }})
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+        {% else %}
+        <div style="display: flex; gap: 0.8rem;">
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fa-solid fa-circle-info"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>OpenSphere &copy; 2026 • MCA Semester 3 OSTF Project</p>
+    </footer>
+
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

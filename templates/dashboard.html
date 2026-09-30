@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Analytics & Workload Dashboard</h1>
+        <p class="page-subtitle">Welcome back, {{ session.get('username') }}! Here is your project overview.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+
+        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+        </a>
+        <a href="{{ url_for('create_issue') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Report Issue
+        </a>
+        <a href="{{ url_for('create_project') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-folder-plus"></i> New Project
+        </a>
+    </div>
+</div>
+
+<!-- Key Performance Indicators (Stats Cards) -->
+<div class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-icon icon-indigo">
+            <i class="fa-solid fa-folder-tree"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ total_projects }}</div>
+            <div class="stat-lbl">Active Projects</div>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon icon-amber">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ total_issues }}</div>
+            <div class="stat-lbl">Total Issues</div>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon icon-emerald">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ resolved_issues }}</div>
+            <div class="stat-lbl">Resolved Issues</div>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon icon-rose">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <div class="stat-val">{{ critical_issues }}</div>
+            <div class="stat-lbl">Critical Severity</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Issues by Lifecycle Status
+        </h3>
+        <div style="height: 240px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-chart-simple" style="color: var(--accent);"></i> Issues by Priority Level
+        </h3>
+        <div style="height: 240px;">
+            <canvas id="priorityChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Active Projects & Recent Issues Grids -->
+<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+    <!-- Active Projects -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700;">
+                <i class="fa-solid fa-diagram-project" style="color: var(--primary); margin-right: 0.5rem;"></i> Active Repositories & Projects
+            </h3>
+            <a href="{{ url_for('projects') }}" style="font-size: 0.85rem;">View All <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Tech Stack</th>
+                        <th>Status</th>
+                        <th>Issues Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in projects %}
+                    <tr>
+                        <td>
+                            <strong>{{ p.title }}</strong>
+                            <div style="color: var(--text-muted); font-size: 0.8rem;">{{ p.description[:60] }}...</div>
+                        </td>
+                        <td><span style="color: var(--text-dim); font-size: 0.85rem;">{{ p.technology_stack }}</span></td>
+                        <td>
+                            <span class="badge badge-resolved">{{ p.status }}</span>
+                        </td>
+                        <td><strong>{{ p.issues|length }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('project_detail', project_id=p.id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No projects created yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Issues -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--warning); margin-right: 0.5rem;"></i> Recent Issues & Activity
+            </h3>
+            <a href="{{ url_for('issues') }}" style="font-size: 0.85rem;">View All Issues <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Issue Title</th>
+                        <th>Project</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assignee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in recent_issues %}
+                    <tr>
+                        <td>#{{ issue.id }}</td>
+                        <td>
+                            <a href="{{ url_for('issue_detail', issue_id=issue.id) }}" style="font-weight: 600;">
+                                {{ issue.title }}
+                            </a>
+                        </td>
+                        <td>{{ issue.project.title }}</td>
+                        <td>
+                            <span class="badge badge-{{ issue.priority|lower }}">{{ issue.priority }}</span>
+                        </td>
+                        <td>
+                            {% if issue.status == 'Open' %}
+                                <span class="badge badge-open">Open</span>
+                            {% elif issue.status == 'In Progress' %}
+                                <span class="badge badge-progress">In Progress</span>
+                            {% elif issue.status == 'Resolved' %}
+                                <span class="badge badge-resolved">Resolved</span>
+                            {% else %}
+                                <span class="badge badge-closed">Closed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                                {{ issue.assignee.username if issue.assignee else 'Unassigned' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No issues found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.analyticsData = {{ analytics | tojson }};
+</script>
+{% endblock %}
